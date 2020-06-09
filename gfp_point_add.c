@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include "bignum.h"
 #include "tinyecc.h"
 
 // see P1363 page 128 (annex A, pdf page 54)
@@ -19,7 +21,7 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
     if(a->infinity)
       {
       memcpy(dest, b, sizeof(struct tinyecc_point_t));
-      return;
+      return TINYECC_E_OK;
       }
 
     //A is not infinity
@@ -27,7 +29,7 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
     if(b->infinity)
       {
       memcpy(dest, a, sizeof(struct tinyecc_point_t));
-      return;
+      return TINYECC_E_OK;
       }
 
     //neither A or B is infinity
