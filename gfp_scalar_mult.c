@@ -6,12 +6,14 @@
 
 uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
                         struct tinyecc_point_t *src,
-                        uint8_t *scalar, uint8_t* prime, uint16_t bits)
+                        uint8_t *scalar, struct tinyecc_wcurve_t* curve)
 {
     int16_t bit;
-    uint16_t bytes = TINYECC_BYTES_FOR_BITS(bits);
+    uint16_t bytes = TINYECC_BYTES_FOR_BITS(curve->bits);
 
     struct tinyecc_point_t inc;
+    uint8_t *tmp1;
+    uint8_t *tmp2;
 
     /* Alg: We perform successive additions and shifts.
      * Initialize accumulator to zero
@@ -24,6 +26,9 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
     //init
     if(src->infinity)
       return TINYECC_E_INVALID;
+
+    tmp1 = alloca(bytes);
+    tmp2 = alloca(bytes);
 
     dest->infinity = true;
 
@@ -44,14 +49,16 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
         //    If hi = 0 and ki = 1 then compute S <- S – Q.
     //7. Output S.
 
-    for(bit=bits-1; bit>=0; bit--)
+    for(bit=curve->bits-1; bit>=0; bit--)
       {
         printf("for bit %d scalar value=%d\n", bit, bignum_bitget(scalar, bit, bytes));
         if(bignum_bitget(scalar,bit,bytes))
           {
-            gfp_point_add(dest, dest, &inc, bits); //accumulate the increments
+            printf("accumulation step\n");
+            gfp_point_add(dest, dest, &inc, curve, tmp1, tmp2); //accumulate the increments
           }
-        gfp_point_add(&inc, &inc, &inc, bits); //double the increment
+        printf("doubling step\n");
+        gfp_point_add(&inc, &inc, &inc, curve, tmp1, tmp2); //double the increment
       }
     return BIGNUM_OK;
   }

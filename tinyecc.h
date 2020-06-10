@@ -85,6 +85,7 @@ typedef void (*tinyecc_rand_f)(uint8_t * dest, uint16_t len);
 /* FUNCTIONS */
 /*============================================================================*/
 void tinyecc_debug_curve(struct tinyecc_wcurve_t *curve);
+void gfp_debug_point(const char *name, struct tinyecc_point_t* data, uint16_t bits);
 
 /*----------------------------------------------------------------------------*/
 /*
@@ -146,11 +147,13 @@ void tinyecc_curve_debug(struct tinyecc_wcurve_t *curve);
 uint8_t gfp_point_add(struct tinyecc_point_t *dest,
                       struct tinyecc_point_t *a,
                       struct tinyecc_point_t *b,
-                      uint16_t bits);
+                      struct tinyecc_wcurve_t *curve,
+                      uint8_t *tmp1, uint8_t *tmp2);
 
 uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
                         struct tinyecc_point_t *src,
-                        uint8_t *scalar, uint8_t* prime, uint16_t bits);
+                        uint8_t *scalar,
+                        struct tinyecc_wcurve_t *curve);
 
 #endif /* __tinyecc__H__ */
 

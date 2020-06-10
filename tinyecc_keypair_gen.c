@@ -49,7 +49,7 @@ uint8_t tinyecc_keypair_gen(tinyecc_rand_f random,
     gfp_scalar_mult(&pub->key,
                     &pub->curve->g,
                     priv->s,
-                    pub->curve->prime, pub->curve->bits);
+                    pub->curve);
 
     return TINYECC_E_OK;
   }

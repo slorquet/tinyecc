@@ -23,4 +23,10 @@ uint8_t bignum_sub(uint8_t *dest, uint8_t *a, uint8_t *b, uint16_t len);
 uint8_t bignum_divmod(uint8_t *quotient, uint8_t *remainder,
                       uint8_t *dividend, uint8_t *divisor, uint16_t len);
 
+uint8_t bignum_loaduint(uint8_t *dest, uint16_t len, uint64_t value);
+uint8_t bignum_addmod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint16_t len);
+uint8_t bignum_submod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint16_t len);
+uint8_t bignum_mulmod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint16_t len);
+uint8_t bignum_modinverse(uint8_t *dest, uint8_t *src, uint8_t *mod, uint16_t len);
+
 #endif /* __BIGNUM__H__ */
