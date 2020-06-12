@@ -4,16 +4,16 @@
 #include "bignum.h"
 #include "tinyecc.h"
 
-uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
-                        struct tinyecc_point_t *src,
-                        uint8_t *scalar, struct tinyecc_wcurve_t* curve)
+uint8_t gfp_scalar_mult(struct tinyecc_point_t *s,
+                        struct tinyecc_point_t *q,
+                        uint8_t *k, struct tinyecc_wcurve_t* curve)
 {
     int16_t bit;
     uint16_t bytes = TINYECC_BYTES_FOR_BITS(curve->bits);
 
-    struct tinyecc_point_t inc;
-    uint8_t *tmp1;
-    uint8_t *tmp2;
+    struct tinyecc_point_t neg;
+    uint8_t *h,*tmp1,*tmp2;
+
 
     /* Alg: We perform successive additions and shifts.
      * Initialize accumulator to zero
@@ -23,43 +23,68 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
      *  in all cases, double the increment.
      */
 
-    //init
-    if(src->infinity)
+    //1. If n = 0 then output O and stop.
+    if(bignum_iszero(k,bytes))
+      {
+        s->infinity = true;
+        return TINYECC_E_INVALID;
+      }
+
+    if(q->infinity)
+      {
       return TINYECC_E_INVALID;
+      }
 
     tmp1 = alloca(bytes);
     tmp2 = alloca(bytes);
 
-    dest->infinity = true;
-
-    inc.x = alloca(bytes);
-    inc.y = alloca(bytes);
-    inc.infinity = false;
-    memcpy(inc.x,src->x,bytes);
-    memcpy(inc.y,src->y,bytes);
-
-    //1. If n = 0 then output O and stop.
     //2. If n < 0 the set Q <- (–P) and k <- (–n), else set Q <- P and k <- n.
     //3. Let hl hl–1 ...h1 h0 be the binary representation of 3k, where the most significant bit hl is 1.
-    //4. Let kl kl–1...k1 k0 be the binary representation of k.
-    //5. Set S <- Q.
-    //6. For i from l – 1 downto 1 do
-        //    Set S <- 2S.
-        //    If hi = 1 and ki = 0 then compute S <- S + Q.
-        //    If hi = 0 and ki = 1 then compute S <- S – Q.
-    //7. Output S.
+    h = alloca(bytes);
+    memcpy(h, k, bytes);        //h contains k
+    bignum_lshift(h, 1, bytes); //h contains 2k
+    bignum_add(h, h,k, bytes);  //h contains 3k
+    bignum_debug_buf("3k=",h,bytes);
 
-    for(bit=curve->bits-1; bit>=0; bit--)
+    neg.infinity = false;
+    neg.x = q->x;
+    neg.y = alloca(bytes);
+    bignum_neg(neg.y, q->y, bytes);
+
+    //5. Set S <- Q.
+    memcpy(s->x, q->x, bytes);
+    memcpy(s->y, q->y, bytes);
+    s->infinity = false;
+
+    //4. Let kl kl–1...k1 k0 be the binary representation of k.
+    //6. For i from l – 1 downto 1 do
+    for(bit=curve->bits-1; bit>0; bit--)
       {
-        printf("for bit %d scalar value=%d\n", bit, bignum_bitget(scalar, bit, bytes));
-        if(bignum_bitget(scalar,bit,bytes))
+        uint8_t hi,ki;
+
+        //    Set S <- 2S.
+        printf("bit %d doubling step\n", bit);
+        gfp_point_add(s, s, s, curve, tmp1, tmp2); //double the increment
+    
+        hi = bignum_bitget(h,bit,bytes);
+        ki = bignum_bitget(k,bit,bytes);
+        printf("hi=%d ki=%d\n",hi,ki);
+        //    If hi = 1 and ki = 0 then compute S <- S + Q.
+        if(hi == 1 && ki == 0)
           {
-            printf("accumulation step\n");
-            gfp_point_add(dest, dest, &inc, curve, tmp1, tmp2); //accumulate the increments
+            printf("doing S<-S+Q\n");
+            gfp_point_add(s, s, q, curve, tmp1, tmp2); //accumulate the increments
           }
-        printf("doubling step\n");
-        gfp_point_add(&inc, &inc, &inc, curve, tmp1, tmp2); //double the increment
+
+        //    If hi = 0 and ki = 1 then compute S <- S – Q.
+        if(hi == 0 && ki == 1)
+          {
+            printf("doing S<-S-Q\n");
+            gfp_point_add(s, s, &neg, curve, tmp1, tmp2); //accumulate the increments
+          }
       }
+
+    //7. Output S.
     return BIGNUM_OK;
   }
 

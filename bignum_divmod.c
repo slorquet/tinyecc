@@ -19,8 +19,8 @@ uint8_t bignum_divmod(uint8_t *quotient /*Q*/, uint8_t *remainder /*R*/,
       return BIGNUM_ZERODIV;
     }
 
-  bignum_debug_buf("divmod_A ", dividend, bytes);
-  bignum_debug_buf("divmod_B ", divisor , bytes);
+  //bignum_debug_buf("divmod_A ", dividend, bytes);
+  //bignum_debug_buf("divmod_B ", divisor , bytes);
 
   /* Q := 0                 -- initialize quotient and remainder to zero */
   /* R := 0                     */
@@ -52,8 +52,8 @@ uint8_t bignum_divmod(uint8_t *quotient /*Q*/, uint8_t *remainder /*R*/,
          if(quotient) bignum_bitset(quotient, i, 1, bytes);
       }
     }
-  if(quotient) bignum_debug_buf("divmod_Q ", quotient, bytes);
-  bignum_debug_buf("divmod_R ", rem, bytes);
+  //if(quotient) bignum_debug_buf("divmod_Q ", quotient, bytes);
+  //bignum_debug_buf("divmod_R ", rem, bytes);
 
   memcpy(remainder, rem, bytes);
   return BIGNUM_OK;

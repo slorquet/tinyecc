@@ -43,6 +43,9 @@ uint8_t tinyecc_keypair_gen(tinyecc_rand_f random,
       }
     while(0);
 
+  tinyecc_curve_load(priv->s  , pub->curve->bits,
+    "70246E29AFE14870E983A9F29C118B559D0AB85263EB920352A6E37CBCA1BF29");
+
     bignum_debug_buf("privkey: ", priv->s, bytes);
 
     //compute the public key (wx,wy) = (gx,gy) * s

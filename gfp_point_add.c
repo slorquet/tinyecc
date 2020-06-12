@@ -42,7 +42,22 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
     //neither A or B is infinity
     //Are the number similar so we have to perform doubling?
     //3. If x0 == x1 then
-    if(bignum_compare(a->x, b->x, bytes) == 0)
+    if(bignum_compare(a->x, b->x, bytes) != 0)
+      {
+        //Normal addition
+        printf("A and B different -> addition\n");
+        //3.1 set L <- (y0 – y1) / (x0 – x1) mod p
+        //T1 <- y0 - y1
+        bignum_submod(tmp1, a->y, b->y, curve->prime, bytes);
+        //T2 <- x0 - x1
+        bignum_submod(tmp2, a->x, b->x, curve->prime, bytes);
+        //T2 <- modinverse(T2)
+        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);
+        //T1 <- T1 * T2
+        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
+        //3.2 go to step 7
+      }
+    else
       {
         //Point doubling
         //4. If y0 != y1 then output P2 <- O and stop
@@ -62,35 +77,26 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
         //6 Set L <- (3 x1^2 + a) / (2y1) mod p
         //T1 <- x1 * x1
         bignum_mulmod(tmp1, b->x, b->x, curve->prime, bytes);
+bignum_debug_buf("square step ",tmp1, bytes);
         //T2 <- 3
         bignum_loaduint(tmp2, bytes, 3);
         //T1 <- T1 * T2
         bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
+bignum_debug_buf("mul3 step ",tmp1, bytes);
         //T1 <- T1 + a
         bignum_addmod(tmp1, tmp1, curve->a, curve->prime, bytes);
+bignum_debug_buf("numerator step ",tmp1, bytes);
         //T2 <- 2
         bignum_loaduint(tmp2, bytes, 2);
         //T2 <- y1 * T2
-        bignum_mulmod(tmp1, b->y, tmp2, curve->prime, bytes);
+        bignum_mulmod(tmp2, b->y, tmp2, curve->prime, bytes);
+bignum_debug_buf("denom step ",tmp2, bytes);
         //T2 <- modinverse(T2)
         bignum_modinverse(tmp2, tmp2, curve->prime, bytes);
+bignum_debug_buf("modinverse step ",tmp2, bytes);
         //T1 <- T1 * T2
         bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
-      }
-    else
-      {
-        //Normal addition
-        printf("A and B different -> addition\n");
-        //3.1 set L <- (y0 – y1) / (x0 – x1) mod p
-        //T1 <- y0 - y1
-        bignum_submod(tmp1, a->y, b->y, curve->prime, bytes);
-        //T2 <- x0 - x1
-        bignum_submod(tmp2, a->x, b->x, curve->prime, bytes);
-        //T2 <- modinverse(T2)
-        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);
-        //T1 <- T1 * T2
-        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
-        //3.2 go to step 7
+bignum_debug_buf("lambda step ",tmp1, bytes);
       }
     //7. Set x2 <- L^2 – x0 – x1 mod p
     //T2 <- T1 * T1

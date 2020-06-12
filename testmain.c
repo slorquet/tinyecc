@@ -108,6 +108,8 @@ int main(int argc, char **argv)
   r = tinyecc_keypair_gen(genrand, &pub, &priv);
   printf("Gen keypair : %d (expected: %d)\n", r, TINYECC_E_OK);
 
+  
+
   return 0;
 }
 
