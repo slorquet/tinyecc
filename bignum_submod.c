@@ -8,7 +8,10 @@ uint8_t bignum_submod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint1
     ret = bignum_sub(dest, a, b, len);
     if(ret != BIGNUM_OK) return ret;
 
-    ret = bignum_divmod(NULL, dest, dest, mod, len);
+    if(bignum_compare(dest, mod, len) >= 0)
+      {
+        bignum_add(dest, dest, mod, len);
+      }
     return ret;
   }
 

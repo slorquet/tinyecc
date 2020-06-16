@@ -4,7 +4,8 @@
 #include <stdint.h>
 
 #define BIGNUM_OK 0
-#define BIGNUM_ZERODIV 1
+#define BIGNUM_CARRY 1
+#define BIGNUM_ZERODIV 2
 
 void bignum_debug_buf(const char *name, uint8_t* data, uint16_t len);
 
