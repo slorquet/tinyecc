@@ -94,6 +94,8 @@ int main(int argc, char **argv)
     "4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5");
   tinyecc_curve_load(curve.r    , curve.bits,
     "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+
+  printf("G is on curve? %s\n", tinyecc_point_oncurve(&curve, &curve.g) ? "yes":"no");
 #endif
 
   tinyecc_debug_curve(&curve);
@@ -112,6 +114,10 @@ int main(int argc, char **argv)
   bignum_debug_buf("pubx:", pub.key.x, pub.curve->bits>>3);
   bignum_debug_buf("puby:", pub.key.y, pub.curve->bits>>3);
   
+  printf("pubkey is on curve? %s\n", tinyecc_point_oncurve(&curve, &pub.key) ? "yes":"no");
+
+  pub.key.x[0] ^= 0x55;
+  printf("badpubkey is on curve? %s\n", tinyecc_point_oncurve(&curve, &pub.key) ? "yes":"no");
 
   return 0;
 }

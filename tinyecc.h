@@ -155,5 +155,7 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *dest,
                         uint8_t *scalar,
                         struct tinyecc_wcurve_t *curve);
 
+bool tinyecc_point_oncurve(struct tinyecc_wcurve_t *curve, struct tinyecc_point_t *point);
+
 #endif /* __tinyecc__H__ */
 

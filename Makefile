@@ -10,7 +10,7 @@ OBJS+= gfp_point_add.o gfp_scalar_mult.o
 OBJS+= gfp_debug_point.o
 
 OBJS+=tinyecc_bin2hex.o tinyecc_hex2bin.o
-OBJS+=tinyecc_curve_init.o tinyecc_curve_load.o tinyecc_debug_curve.o
+OBJS+=tinyecc_curve_init.o tinyecc_curve_load.o tinyecc_debug_curve.o tinyecc_point_oncurve.o
 OBJS+=tinyecc_keypair_init.o tinyecc_keypair_gen.o
 
 CC=gcc -g
