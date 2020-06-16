@@ -36,20 +36,12 @@ uint8_t bignum_mulmod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint1
     uint8_t *tmp = alloca(2*len);
     uint8_t *bigmod = alloca(2*len);
 
-    //bignum_debug_buf("mulmod a=",a,len);
-    //bignum_debug_buf("mulmod b=",b,len);
-    //bignum_debug_buf("mulmod p=",mod,len);
-
     memset(bigmod, 0, 2*len);
     memcpy(bigmod+len, mod, len);
-    //bignum_debug_buf("mulmod bigp=",bigmod,2*len);
 
     bignum_mul(tmp, a, b, len);
-    bignum_debug_buf("mulmod prod=",tmp,2*len);
     bignum_divmod(NULL, tmp, tmp, bigmod, 2*len);
-    //bignum_debug_buf("mulmod rem=",tmp,2*len);
     memcpy(dest, tmp+len, len);
-    //bignum_debug_buf("mulmod res=",dest,len);
 #endif
     return BIGNUM_OK;
   }

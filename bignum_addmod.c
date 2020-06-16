@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include "bignum.h"
 
 uint8_t bignum_addmod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint16_t len)
@@ -20,8 +21,15 @@ uint8_t bignum_addmod(uint8_t *dest, uint8_t *a, uint8_t *b, uint8_t *mod, uint1
 //bignum_debug_buf("addmod sum ", dest, len);
 //bignum_debug_buf("addmod mod ", mod, len);
 
-    if(bignum_compare(dest, mod, len) >= 0 || carry)
+    if(carry)
       {
+//        printf("addmod fix carry\n");
+        bignum_sub(dest, dest, mod, len);
+      }
+    if(bignum_compare(dest, mod, len) >= 0)
+      {
+        if(carry) printf("double fix TOCHECK\n");
+//        printf("addmod fix mod\n");
         bignum_sub(dest, dest, mod, len);
       }
 //bignum_debug_buf("addmod res ", dest, len);

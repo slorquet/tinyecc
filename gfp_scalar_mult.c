@@ -49,7 +49,7 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *s,
     neg.infinity = false;
     neg.x = q->x;
     neg.y = alloca(bytes);
-    bignum_neg(neg.y, q->y, bytes);
+    bignum_negmod(neg.y, q->y, curve->prime, bytes);
 
     //5. Set S <- Q.
     memcpy(s->x, q->x, bytes);
@@ -82,6 +82,7 @@ uint8_t gfp_scalar_mult(struct tinyecc_point_t *s,
             printf("doing S<-S-Q\n");
             gfp_point_add(s, s, &neg, curve, tmp1, tmp2); //accumulate the increments
           }
+printf("\n");
       }
 
     //7. Output S.

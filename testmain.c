@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "tinyecc.h"
+#include "bignum.h"
 
 //return random bytes
 static void genrand(uint8_t * dest, uint16_t len)
@@ -107,7 +108,9 @@ int main(int argc, char **argv)
 
   r = tinyecc_keypair_gen(genrand, &pub, &priv);
   printf("Gen keypair : %d (expected: %d)\n", r, TINYECC_E_OK);
-
+  bignum_debug_buf("priv:", priv.s   ,priv.curve->bits>>3);
+  bignum_debug_buf("pubx:", pub.key.x, pub.curve->bits>>3);
+  bignum_debug_buf("puby:", pub.key.y, pub.curve->bits>>3);
   
 
   return 0;

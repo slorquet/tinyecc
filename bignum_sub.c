@@ -19,5 +19,9 @@ uint8_t bignum_sub(uint8_t *dest, uint8_t *a, uint8_t *b, uint16_t len)
       //printf("SUB len-1=%d a[len-1]=%02X b[len-1]=%02X res[len-1]=%02X CY=%d\n", len-1, aa, bb, dd, acc);
       len -= 1;
       }
+    if(acc)
+      {
+        return BIGNUM_CARRY;
+      }
     return BIGNUM_OK;
   }

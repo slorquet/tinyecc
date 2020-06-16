@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <alloca.h>
 #include "bignum.h"
 #include "tinyecc.h"
 
@@ -39,22 +40,24 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
       }
 
     dest->infinity = false;
+    uint8_t *dx = alloca(bytes);
+    uint8_t *dy = alloca(bytes);
+
     //neither A or B is infinity
     //Are the number similar so we have to perform doubling?
     //3. If x0 == x1 then
     if(bignum_compare(a->x, b->x, bytes) != 0)
       {
         //Normal addition
-        printf("A and B different -> addition\n");
+//printf("A and B different -> addition\n");
         //3.1 set L <- (y0 – y1) / (x0 – x1) mod p
-        //T1 <- y0 - y1
-        bignum_submod(tmp1, a->y, b->y, curve->prime, bytes);
-        //T2 <- x0 - x1
-        bignum_submod(tmp2, a->x, b->x, curve->prime, bytes);
-        //T2 <- modinverse(T2)
-        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);
-        //T1 <- T1 * T2
-        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
+        bignum_submod(tmp1, a->y, b->y, curve->prime, bytes); //T1 <- y0 - y1
+//bignum_debug_buf("delta_y ",tmp1, bytes);
+        bignum_submod(tmp2, a->x, b->x, curve->prime, bytes); //T2 <- x0 - x1
+//bignum_debug_buf("delta_x ",tmp2, bytes);
+        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);   //T2 <- modinverse(T2)
+        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes); //T1 <- T1 * T2
+//bignum_debug_buf("lambda ",tmp1, bytes);
         //3.2 go to step 7
       }
     else
@@ -72,49 +75,40 @@ uint8_t gfp_point_add(struct tinyecc_point_t *dest,
             dest->infinity = true;
             return TINYECC_E_OK;
           }
-        printf("A and B similar -> doubling\n");
+//        printf("A and B similar -> doubling\n");
 
         //6 Set L <- (3 x1^2 + a) / (2y1) mod p
-        //T1 <- x1 * x1
-        bignum_mulmod(tmp1, b->x, b->x, curve->prime, bytes);
-bignum_debug_buf("square step ",tmp1, bytes);
-        //T2 <- 3
-        bignum_loaduint(tmp2, bytes, 3);
-        //T1 <- T1 * T2
-        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
-bignum_debug_buf("mul3 step ",tmp1, bytes);
-        //T1 <- T1 + a
-        bignum_addmod(tmp1, tmp1, curve->a, curve->prime, bytes);
-bignum_debug_buf("numerator step ",tmp1, bytes);
-        //T2 <- 2
-        bignum_loaduint(tmp2, bytes, 2);
-        //T2 <- y1 * T2
-        bignum_mulmod(tmp2, b->y, tmp2, curve->prime, bytes);
-bignum_debug_buf("denom step ",tmp2, bytes);
-        //T2 <- modinverse(T2)
-        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);
-bignum_debug_buf("modinverse step ",tmp2, bytes);
-        //T1 <- T1 * T2
-        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);
-bignum_debug_buf("lambda step ",tmp1, bytes);
+
+        bignum_mulmod(tmp1, b->x, b->x, curve->prime, bytes);     //T1 <- x1 * x1
+        bignum_loaduint(tmp2, bytes, 3);                          //T2 <- 3
+        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);     //T1 <- T1 * T2
+        bignum_addmod(tmp1, tmp1, curve->a, curve->prime, bytes); //T1 <- T1 + a
+        bignum_loaduint(tmp2, bytes, 2);                          //T2 <- 2
+        bignum_mulmod(tmp2, b->y, tmp2, curve->prime, bytes);     //T2 <- y1 * T2
+        bignum_modinverse(tmp2, tmp2, curve->prime, bytes);       //T2 <- modinverse(T2)
+        bignum_mulmod(tmp1, tmp1, tmp2, curve->prime, bytes);     //T1 <- T1 * T2
+//bignum_debug_buf("lambda ",tmp1, bytes);
       }
     //7. Set x2 <- L^2 – x0 – x1 mod p
-    //T2 <- T1 * T1
-    bignum_mulmod(tmp2, tmp1, tmp1, curve->prime, bytes);
-    //T2 <- T2 - x0
-    bignum_submod(tmp2, tmp2, a->x, curve->prime, bytes);
-    //x2 <- T2 - x1
-    bignum_submod(dest->x, tmp2, b->x, curve->prime, bytes);
+
+    bignum_mulmod(tmp2, tmp1, tmp1, curve->prime, bytes); //T2 <- T1 * T1
+//bignum_debug_buf("x2a ",tmp2, bytes);
+    bignum_submod(tmp2, tmp2, a->x, curve->prime, bytes); //T2 <- T2 - x0
+//bignum_debug_buf("x2b ",tmp2, bytes);
+    bignum_submod(dx, tmp2, b->x, curve->prime, bytes);   //x2 <- T2 - x1
+//bignum_debug_buf("x2  ",dx, bytes);
 
     //8. Set y2 <- (x1 – x2) L – y1 mod p
-    //T2 <- x1 - x2
-    bignum_submod(tmp2, b->x, dest->x, curve->prime, bytes);
-    //T2 <- T2 * T1
-    bignum_mulmod(tmp2, tmp2, tmp1, curve->prime, bytes);
-    //y2 <- T2 - y1
-    bignum_submod(dest->y, tmp2, b->y, curve->prime, bytes);
+    bignum_submod(tmp2, b->x, dx, curve->prime, bytes);     //T2 <- x1 - x2
+//bignum_debug_buf("y2a ",tmp2, bytes);
+    bignum_mulmod(tmp2, tmp2, tmp1, curve->prime, bytes);   //T2 <- T2 * T1
+//bignum_debug_buf("y2b ",tmp2, bytes);
+    bignum_submod(dy, tmp2, b->y, curve->prime, bytes);     //y2 <- T2 - y1
+//bignum_debug_buf("y2  ",dy, bytes);
 
     //9. Output P2 <- (x2, y2)
+    memcpy(dest->x, dx, bytes);
+    memcpy(dest->y, dy, bytes);
     gfp_debug_point("gfp_add A+B:",dest,curve->bits);
   }
 
